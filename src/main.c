@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <inttypes.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 int main(int argc, char **argv)
 {
@@ -23,22 +26,66 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    unsigned char buffer[16];
-    ssize_t bytes_read;
-    off_t byte_offset = 0;
+    // Get filesize
+    struct stat file_info;
 
-    while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+    if (fstat(fd, &file_info) == -1)
     {
-        printf("%08jx: ", (uintmax_t)byte_offset);
+        perror("fstat");
+        close(fd);
+        return 1;
+    }
+
+    // Allocate memory for the whole file
+    unsigned char *data = malloc(file_info.st_size);
+
+    if (data == NULL)
+    {
+        perror("malloc");
+        close(fd);
+        return 1;
+    }
+
+    // Copy file into data
+    size_t total_read = 0;
+    size_t file_size = (size_t)file_info.st_size;
+
+    while (total_read < file_size)
+    {
+        ssize_t bytes_read = read(fd, data + total_read, file_size - total_read);
+
+        if (bytes_read == -1)
+        {
+            if (errno == EINTR)
+                continue;
+
+            perror("read");
+            close(fd);
+            return 1;
+        }
+        if (bytes_read == 0)
+        {
+            break;
+        }
+
+        total_read += (size_t)bytes_read;
+    }
+
+    for (size_t offset = 0; offset < total_read; offset += 16)
+    {
+        printf("%08jx: ", offset);
+
+        size_t remaining = total_read - offset;
+        size_t row_size = remaining < 16 ? remaining : 16;
 
         // Hex values for each byte
-        for (size_t i = 0; i < bytes_read; i++)
+        for (size_t i = 0; i < row_size; i++)
         {
-            printf("%02X ", buffer[i]);
+            printf("%02X ", data[i + offset]);
         }
 
         // Padding for ASCII charactes
-        for (int i = bytes_read; i < 16; i++)
+        for (int i = row_size; i < 16; i++)
         {
             printf("   ");
         }
@@ -46,16 +93,14 @@ int main(int argc, char **argv)
         printf("| ");
 
         // ASCII representation
-        for (size_t i = 0; i < (size_t)bytes_read; i++)
+        for (size_t i = 0; i < row_size; i++)
         {
-            if (isprint(buffer[i]))
-                printf("%c", buffer[i]);
+            if (isprint(data[i + offset]))
+                printf("%c", data[i + offset]);
             else
                 printf(".");
         }
         printf("\n");
-
-        byte_offset += bytes_read;
     }
 
     close(fd);
