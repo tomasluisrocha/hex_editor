@@ -1,4 +1,3 @@
-
 #include "display.h"
 
 #include <ctype.h>

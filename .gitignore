@@ -3,6 +3,10 @@ build/
 bin/
 dist/
 
+# Test private code
+experiments/
+docs/
+
 # Binaries and objects
 *.o
 *.a
