@@ -1,13 +1,14 @@
 #include "editor.h"
 
 void editor_move_left(struct editor *editor) {
-    if (editor->cursor_offset > 0) {
+    if (editor->cursor_offset > 0 && editor->cursor_offset % ROW_SIZE != 0) {
         editor->cursor_offset -= 1;
     }
 }
 
 void editor_move_right(struct editor *editor) {
-    if (editor->cursor_offset + 1 < editor->file_size) {
+    if (editor->cursor_offset + 1 < editor->file_size &&
+        editor->cursor_offset % ROW_SIZE != ROW_SIZE - 1) {
         editor->cursor_offset += 1;
     }
 }

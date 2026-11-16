@@ -23,9 +23,16 @@ struct editor {
     enum display_mode display;
 };
 
+// Moves the cursor in editor to the left (does nothing if already on the start of row)
 void editor_move_left(struct editor *editor);
+
+// Moves the cursor in editor to the right (does nothing if already on end of row or end of file)
 void editor_move_right(struct editor *editor);
+
+// Moves the cursor in editor up (does nothing if already on first line)
 void editor_move_up(struct editor *editor);
+
+// Moves the cursor in editor down (does nothing if already on last line)
 void editor_move_down(struct editor *editor);
 
 #endif
