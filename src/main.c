@@ -33,10 +33,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    setvbuf(stdout, NULL, _IOFBF, 65536);
+
     bool running = true;
     while (running) {
         terminal_clear_screen();
         display_file(data, &editor);
+
+        fflush(stdout);
 
         int chr = terminal_read_key();
 
