@@ -9,7 +9,7 @@ enum editor_mode {
     MODE_INSERT
 };
 enum display_mode {
-    DIPLAY_ASCII,
+    DISPLAY_ASCII,
     DISPLAY_HEX
 };
 
