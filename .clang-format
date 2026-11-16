@@ -1,18 +1,14 @@
-
-BasedOnStyle: LLVM
-
+BasedOnStyle: Google
 Language: Cpp
 
 IndentWidth: 4
-TabWidth: 4
-UseTab: Never
-
 ColumnLimit: 100
-BreakBeforeBraces: Attach
+DerivePointerAlignment: false
 PointerAlignment: Right
 
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
 
-SortIncludes: true
-
+MaxEmptyLinesToKeep: 1

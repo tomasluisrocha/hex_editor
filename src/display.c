@@ -1,15 +1,13 @@
+
 #include "display.h"
+
 #include <ctype.h>
 #include <inttypes.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-#define ROW_SIZE 16
-
-void display_file(const unsigned char *data, size_t file_size) {
+void display_file(const unsigned char *data, size_t file_size, const struct editor *editor) {
     for (size_t offset = 0; offset < file_size; offset += ROW_SIZE) {
-
         printf("%08jx: ", (uintmax_t)offset);
 
         size_t remaining = file_size - offset;
@@ -17,7 +15,17 @@ void display_file(const unsigned char *data, size_t file_size) {
 
         // Hexadecimal representation
         for (size_t i = 0; i < row_size; i++) {
+            bool selected = editor->cursor_offset == offset + i;
+
+            if (selected) {
+                printf("\033[7m");
+            }
+
             printf("%02X ", data[offset + i]);
+
+            if (selected) {
+                printf("\033[0m");
+            }
         }
 
         // Padding for incomplete rows
@@ -30,11 +38,16 @@ void display_file(const unsigned char *data, size_t file_size) {
         // ASCII representation
         for (size_t i = 0; i < row_size; i++) {
             unsigned char byte = data[offset + i];
+            bool selected = editor->cursor_offset == offset + i;
 
-            if (isprint(byte)) {
-                printf("%c", byte);
-            } else {
-                printf(".");
+            if (selected) {
+                printf("\033[7m");
+            }
+
+            printf("%c", isprint(byte) ? byte : '.');
+
+            if (selected) {
+                printf("\033[0m");
             }
         }
 

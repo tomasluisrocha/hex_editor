@@ -1,3 +1,4 @@
+#include "file.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -8,8 +9,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include "file.h"
 
 unsigned char *load_file(const char *filepath, size_t *file_size) {
     if (file_size == NULL) {
