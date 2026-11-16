@@ -1,13 +1,11 @@
+#include "display.h"
+#include "file.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
-#include "file.h"
-#include "display.h"
 
-int main(int argc, char *argv[])
-{
-    if (argc != 2)
-    {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
         return 1;
     }
@@ -16,8 +14,7 @@ int main(int argc, char *argv[])
 
     unsigned char *data = load_file(argv[1], &file_size);
 
-    if (data == NULL)
-    {
+    if (data == NULL) {
         return 1;
     }
 
