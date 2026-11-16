@@ -2,13 +2,15 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra -Wpedantic -std=c17 -g
 TARGET = hex_editor
-SRC = src/main.c
+
+SRC = src/main.c src/file.c src/display.c
+HEADERS = src/file.h src/display.h
 
 .PHONY: all clean
 
 all: $(TARGET)
 
-$(TARGET): $(SRC) 
+$(TARGET): $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) 
 
 clean: 
