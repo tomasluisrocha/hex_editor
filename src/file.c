@@ -10,10 +10,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-unsigned char *load_file(const char *filepath, size_t *file_size) {
+unsigned char *file_load(const char *filepath, size_t *file_size) {
     if (file_size == NULL) {
         errno = EINVAL;
-        perror("load_file");
+        perror("file_load");
         return NULL;
     }
 

@@ -11,7 +11,12 @@ static struct termios original_settings;
 static bool raw_mode = false;
 static bool atexit_registered = false;
 
-void disable_raw_mode(void) {
+void terminal_clear_screen(void) {
+    printf("\033[2J");
+    printf("\033[H");
+}
+
+void terminal_disable_raw_mode(void) {
     if (!raw_mode) {
         return;
     }
@@ -24,7 +29,7 @@ void disable_raw_mode(void) {
     raw_mode = false;
 }
 
-int enable_raw_mode(void) {
+int terminal_enable_raw_mode(void) {
     if (raw_mode) {
         return 0;
     }
@@ -36,7 +41,7 @@ int enable_raw_mode(void) {
 
     // From here on, any exit() or return from main() restores the terminal.
     if (!atexit_registered) {
-        if (atexit(disable_raw_mode) == 0) {
+        if (atexit(terminal_disable_raw_mode) == 0) {
             atexit_registered = true;
         } else {
             fprintf(stderr, "atexit(): could not register exit function\n");
@@ -57,9 +62,6 @@ int enable_raw_mode(void) {
     raw.c_iflag &= ~IXON;   // Ctrl-S / Ctrl-Q arrive as bytes instead of freezing output
     raw.c_iflag &= ~ICRNL;  // Enter arrives as 13 (\r), not translated to 10 (\n)
 
-    // Output flags
-    raw.c_oflag &= ~OPOST;  // no "\n" -> "\r\n" translation: we must print "\r\n" ourselves
-
     // read() blocks until at least 1 byte is available, with no timeout.
     raw.c_cc[VMIN] = 1;
     raw.c_cc[VTIME] = 0;
@@ -73,7 +75,7 @@ int enable_raw_mode(void) {
     return 0;
 }
 
-int read_key(void) {
+int terminal_read_key(void) {
     while (1) {
         unsigned char c;
         ssize_t n = read(STDIN_FILENO, &c, 1);

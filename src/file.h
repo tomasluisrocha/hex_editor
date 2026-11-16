@@ -3,6 +3,6 @@
 
 #include <stddef.h>
 
-unsigned char *load_file(const char *filepath, size_t *file_size);
+unsigned char *file_load(const char *filepath, size_t *file_size);
 
 #endif

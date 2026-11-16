@@ -5,11 +5,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-void display_file(const unsigned char *data, size_t file_size, const struct editor *editor) {
-    for (size_t offset = 0; offset < file_size; offset += ROW_SIZE) {
+void display_file(const unsigned char *data, const struct editor *editor) {
+    for (size_t offset = 0; offset < editor->file_size; offset += ROW_SIZE) {
         printf("%08jx: ", (uintmax_t)offset);
 
-        size_t remaining = file_size - offset;
+        size_t remaining = editor->file_size - offset;
         size_t row_size = remaining < ROW_SIZE ? remaining : ROW_SIZE;
 
         // Hexadecimal representation
@@ -20,11 +20,13 @@ void display_file(const unsigned char *data, size_t file_size, const struct edit
                 printf("\033[7m");
             }
 
-            printf("%02X ", data[offset + i]);
+            printf("%02X", data[offset + i]);
 
             if (selected) {
                 printf("\033[0m");
             }
+
+            printf(" ");
         }
 
         // Padding for incomplete rows

@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,34 +22,49 @@ int main(int argc, char *argv[]) {
         .display = DISPLAY_HEX,
     };
 
-    size_t file_size = 0;
-
-    unsigned char *data = load_file(argv[1], &file_size);
+    unsigned char *data = file_load(argv[1], &editor.file_size);
 
     if (data == NULL) {
         return 1;
     }
 
-    if (enable_raw_mode() != 0) {
+    if (terminal_enable_raw_mode() == -1) {
         free(data);
         return 1;
     }
 
-    while (1) {
-        int chr = read_key();
+    bool running = true;
+    while (running) {
+        terminal_clear_screen();
+        display_file(data, &editor);
 
-        if (chr == -1) {
-            int saved_errno = errno;
-            disable_raw_mode();
-            fprintf(stderr, "read_key: %s\n", strerror(saved_errno));
-            free(data);
-            return 1;
-        }
+        int chr = terminal_read_key();
 
-        printf("%d\r\n", chr);
-
-        if (chr == 'q') {
-            break;
+        switch (chr) {
+            case -1: {
+                int saved_errno = errno;
+                terminal_disable_raw_mode();
+                fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));
+                free(data);
+                return 1;
+            }
+            case 'h':
+                editor_move_left(&editor);
+                break;
+            case 'j':
+                editor_move_down(&editor);
+                break;
+            case 'k':
+                editor_move_up(&editor);
+                break;
+            case 'l':
+                editor_move_right(&editor);
+                break;
+            case 'q':
+                running = false;
+                break;
+            default:
+                break;
         }
     }
 
