@@ -1,0 +1,25 @@
+# Build directories
+build/
+bin/
+dist/
+
+# Binaries and objects
+*.o
+*.a
+*.so
+*.out
+hex_editor
+
+# Editor files
+.vscode/
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.log
+*.tmp
