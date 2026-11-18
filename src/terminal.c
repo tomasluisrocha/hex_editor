@@ -12,8 +12,17 @@ static bool raw_mode = false;
 static bool atexit_registered = false;
 
 void terminal_clear_screen(void) {
-    printf("\033[2J");
+    printf("\033[2J\033[H");
+    fflush(stdout);
+}
+
+void terminal_begin_frame(void) {
     printf("\033[H");
+}
+
+void terminal_end_frame(void) {
+    printf("\033[J");
+    fflush(stdout);
 }
 
 void terminal_disable_raw_mode(void) {

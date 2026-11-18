@@ -35,12 +35,13 @@ int main(int argc, char *argv[]) {
 
     setvbuf(stdout, NULL, _IOFBF, 65536);
 
+    terminal_clear_screen();
+
     bool running = true;
     while (running) {
-        terminal_clear_screen();
+        terminal_begin_frame();
         display_file(data, &editor);
-
-        fflush(stdout);
+        terminal_end_frame();
 
         int chr = terminal_read_key();
 
@@ -73,5 +74,6 @@ int main(int argc, char *argv[]) {
     }
 
     free(data);
+    terminal_disable_raw_mode();
     return 0;
 }
