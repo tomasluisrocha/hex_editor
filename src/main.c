@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
 
     struct editor editor = {
         .cursor_offset = 0,
+        .first_row = 0,
         .mode = MODE_NORMAL,
         .display = DISPLAY_HEX,
         .last_key = -1,
@@ -36,7 +37,20 @@ int main(int argc, char *argv[]) {
 
     bool running = true;
     while (running) {
-        display_file(data, &editor);
+        size_t rows = 0, columns = 0;
+        if (terminal_get_size(&rows, &columns) == -1) {
+            int saved_errno = errno;
+            terminal_close();
+            fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));
+            free(data);
+            return 1;
+        }
+
+        size_t visible_rows = (rows > RESERVED_ROWS) ? rows - RESERVED_ROWS : 0;
+
+        editor_scroll(&editor, visible_rows);
+
+        display_file(data, &editor, visible_rows, columns);
 
         int chr = terminal_read_key();
         if (chr == -1) {

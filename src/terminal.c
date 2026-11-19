@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -108,6 +109,9 @@ void terminal_clear_below(void) {
 void terminal_flush(void) {
     fflush(stdout);
 }
+void terminal_clear_line(void) {
+    printf("\033[K");
+}
 
 int terminal_read_key(void) {
     while (1) {
@@ -128,4 +132,17 @@ int terminal_read_key(void) {
 
         return (int)c;
     }
+}
+
+int terminal_get_size(size_t *rows, size_t *columns) {
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1 || w.ws_col == 0 || w.ws_row == 0) {
+        *rows = 0;
+        *columns = 0;
+        return -1;
+    }
+
+    *rows = w.ws_row;
+    *columns = w.ws_col;
+    return 0;
 }

@@ -24,3 +24,17 @@ void editor_move_down(struct editor *editor) {
         editor->cursor_offset += ROW_SIZE;
     }
 }
+
+void editor_scroll(struct editor *editor, size_t visible_rows) {
+    if (visible_rows == 0 || editor->file_size == 0) {
+        editor->first_row = 0;
+        return;
+    }
+    size_t cursor_row = editor->cursor_offset / ROW_SIZE;
+    if (cursor_row >= editor->first_row + visible_rows) {
+        editor->first_row = (cursor_row - visible_rows + 1);
+    }
+    if (cursor_row < editor->first_row) {
+        editor->first_row = (cursor_row);
+    }
+}

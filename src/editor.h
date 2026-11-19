@@ -19,6 +19,7 @@ enum display_mode {
 struct editor {
     size_t cursor_offset;
     size_t file_size;
+    size_t first_row;
     enum editor_mode mode;
     enum display_mode display;
     int last_key;
@@ -35,5 +36,7 @@ void editor_move_up(struct editor *editor);
 
 // Moves the cursor in editor down (does nothing if already on last line)
 void editor_move_down(struct editor *editor);
+
+void editor_scroll(struct editor *editor, size_t visible_rows);
 
 #endif

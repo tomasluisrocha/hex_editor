@@ -7,9 +7,21 @@
 
 #include "terminal.h"
 
-void display_file(const unsigned char *data, const struct editor *editor) {
+void display_file(const unsigned char *data, const struct editor *editor, size_t visible_rows,
+                  size_t columns) {
     terminal_cursor_home();
-    for (size_t offset = 0; offset < editor->file_size; offset += ROW_SIZE) {
+    if (visible_rows == 0 || columns < MIN_COLS) {
+        printf("Terminal too small");
+        terminal_clear_line();
+        printf("\n");
+        terminal_clear_below();
+        terminal_flush();
+        return;
+    }
+
+    for (size_t offset = editor->first_row * ROW_SIZE;
+         offset < ((editor->first_row + visible_rows) * ROW_SIZE) && offset < editor->file_size;
+         offset += ROW_SIZE) {
         printf("%08jx: ", (uintmax_t)offset);
 
         size_t remaining = editor->file_size - offset;
@@ -55,6 +67,7 @@ void display_file(const unsigned char *data, const struct editor *editor) {
             }
         }
 
+        terminal_clear_line();
         printf("\n");
     }
     printf("\n");
