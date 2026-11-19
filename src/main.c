@@ -1,4 +1,7 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -10,9 +13,29 @@
 #include "file.h"
 #include "terminal.h"
 
+static volatile sig_atomic_t resized = 0;
+
+static void handle_sigwinch(int sig) {
+    (void)sig;
+    resized = 1;
+}
+
+static int setup_sigwinch(void) {
+    struct sigaction sa = {0};
+    sa.sa_handler = handle_sigwinch;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;  // No SA_RESTART so read() unblocks with EINTR on resize
+    return sigaction(SIGWINCH, &sa, NULL);
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    if (setup_sigwinch() == -1) {
+        perror("sigaction");
         return 1;
     }
 
@@ -38,6 +61,7 @@ int main(int argc, char *argv[]) {
 
     bool running = true;
     while (running) {
+        resized = 0;
         size_t rows = 0, columns = 0;
         if (terminal_get_size(&rows, &columns) == -1) {
             int saved_errno = errno;
@@ -55,6 +79,9 @@ int main(int argc, char *argv[]) {
 
         int chr = terminal_read_key();
         if (chr == -1) {
+            if (errno == EINTR) {
+                continue;
+            }
             int saved_errno = errno;
             terminal_close();
             fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));

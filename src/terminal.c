@@ -120,24 +120,19 @@ void terminal_highlight_stop(void) {
 }
 
 int terminal_read_key(void) {
-    while (1) {
-        unsigned char c;
-        ssize_t n = read(STDIN_FILENO, &c, 1);
+    unsigned char c;
+    ssize_t n = read(STDIN_FILENO, &c, 1);
 
-        if (n == -1) {
-            if (errno == EINTR) {
-                continue;
-            }
-            return -1;
-        }
-
-        if (n == 0) {
-            errno = EIO;
-            return -1;
-        }
-
-        return (int)c;
+    if (n == -1) {
+        return -1;
     }
+
+    if (n == 0) {
+        errno = EIO;
+        return -1;
+    }
+
+    return (int)c;
 }
 
 int terminal_get_size(size_t *rows, size_t *columns) {
