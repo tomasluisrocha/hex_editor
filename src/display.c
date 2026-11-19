@@ -7,16 +7,55 @@
 
 #include "terminal.h"
 
-static void display_status_bar(const struct editor *editor) {
+static const char *display_editor_mode_str(enum editor_mode mode) {
+    switch (mode) {
+        case MODE_NORMAL:
+            return "NORMAL";
+        case MODE_VISUAL:
+            return "VISUAL";
+        case MODE_INSERT:
+            return "INSERT";
+        default:
+            return "UNKNOWN";
+    }
+}
+
+static void display_status_bar(const struct editor *editor, size_t columns) {
     terminal_highlight_start();
-    printf("\"%s\"", editor->filename);
-    printf("      %zuB", editor->file_size);
-    printf("      0x%zx", editor->cursor_offset);
+    int len = 0;
     if (editor->last_key == -1) {
-        printf("      key: none");
+        len = printf("\"%s\"      %zuB      0x%zx      key: none", editor->filename,
+                     editor->file_size, editor->cursor_offset);
     } else {
         unsigned char ch = (unsigned char)editor->last_key;
-        printf("      key: 0x%02X (%d) '%c'", ch, editor->last_key, isprint(ch) ? ch : '.');
+        len = printf("\"%s\"      %zuB      0x%zx      key: 0x%02X (%d) '%c'", editor->filename,
+                     editor->file_size, editor->cursor_offset, ch, editor->last_key,
+                     isprint(ch) ? ch : '.');
+    }
+
+    if (len < 0) {
+        len = 0;
+    }
+
+    for (size_t i = (size_t)len; i < columns; i++) {
+        putchar(' ');
+    }
+
+    terminal_highlight_stop();
+    terminal_clear_line();
+}
+
+static void display_mode_bar(const struct editor *editor, size_t columns) {
+    terminal_highlight_start();
+    int len = 0;
+
+    len = printf("-- %s --", display_editor_mode_str(editor->mode));
+
+    if (len < 0) {
+        len = 0;
+    }
+    for (size_t i = (size_t)len; i < columns; i++) {
+        putchar(' ');
     }
     terminal_highlight_stop();
     terminal_clear_line();
@@ -90,11 +129,13 @@ void display_file(const unsigned char *data, const struct editor *editor, size_t
     }
 
     terminal_clear_below();
-    for (size_t i = rows_printed; i <= visible_rows; i++) {
+    for (size_t i = rows_printed; i < visible_rows; i++) {
         printf("\n");
     }
 
-    display_status_bar(editor);
+    display_status_bar(editor, columns);
+    printf("\n");
+    display_mode_bar(editor, columns);
 
     terminal_flush();
 }
