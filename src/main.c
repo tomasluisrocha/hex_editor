@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
         .cursor_offset = 0,
         .mode = MODE_NORMAL,
         .display = DISPLAY_HEX,
+        .last_key = -1,
     };
 
     unsigned char *data = file_load(argv[1], &editor.file_size);
@@ -38,15 +39,17 @@ int main(int argc, char *argv[]) {
         display_file(data, &editor);
 
         int chr = terminal_read_key();
+        if (chr == -1) {
+            int saved_errno = errno;
+            terminal_close();
+            fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));
+            free(data);
+            return 1;
+        }
+
+        editor.last_key = chr;
 
         switch (chr) {
-            case -1: {
-                int saved_errno = errno;
-                terminal_close();
-                fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));
-                free(data);
-                return 1;
-            }
             case 'h':
                 editor_move_left(&editor);
                 break;

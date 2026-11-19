@@ -57,6 +57,13 @@ void display_file(const unsigned char *data, const struct editor *editor) {
 
         printf("\n");
     }
+    printf("\n");
+    if (editor->last_key == -1) {
+        printf("Last key: none");
+    } else {
+        unsigned char ch = (unsigned char)editor->last_key;
+        printf("Last key: 0x%02X (%d) '%c'", ch, editor->last_key, isprint(ch) ? ch : '.');
+    }
     terminal_clear_below();
     terminal_flush();
 }

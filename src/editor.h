@@ -21,6 +21,7 @@ struct editor {
     size_t file_size;
     enum editor_mode mode;
     enum display_mode display;
+    int last_key;
 };
 
 // Moves the cursor in editor to the left (does nothing if already on the start of row)
