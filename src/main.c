@@ -77,6 +77,39 @@ int main(int argc, char *argv[]) {
             case 'l':
                 editor_move_right(&editor);
                 break;
+            case '0':
+                editor_move_line_start(&editor);
+                break;
+            case '$':
+                editor_move_line_end(&editor);
+                break;
+            case 'g':
+                editor_move_line_first(&editor);
+                break;
+            case 'G':
+                editor_move_line_last(&editor);
+                break;
+            case 6:  // Ctrl+F
+                editor_move_page_down(&editor, visible_rows);
+                break;
+            case 2:  // Ctrl+B
+                editor_move_page_up(&editor, visible_rows);
+                break;
+            case 4:  // Ctrl+D
+                editor_move_half_page_down(&editor, visible_rows);
+                break;
+            case 21:  // Ctrl+U
+                editor_move_half_page_up(&editor, visible_rows);
+                break;
+            case 'H':
+                editor_move_screen_top(&editor);
+                break;
+            case 'M':
+                editor_move_screen_middle(&editor, visible_rows);
+                break;
+            case 'L':
+                editor_move_screen_bottom(&editor, visible_rows);
+                break;
             case 'q':
                 running = false;
                 break;

@@ -20,18 +20,15 @@ static const char *display_editor_mode_str(enum editor_mode mode) {
     }
 }
 
-static void display_status_bar(const struct editor *editor, size_t columns) {
+static void display_status_bar(const struct editor *editor, size_t columns,
+                               const unsigned char *data) {
     terminal_highlight_start();
     int len = 0;
-    if (editor->last_key == -1) {
-        len = printf("\"%s\"      %zuB      0x%zx      key: none", editor->filename,
-                     editor->file_size, editor->cursor_offset);
-    } else {
-        unsigned char ch = (unsigned char)editor->last_key;
-        len = printf("\"%s\"      %zuB      0x%zx      key: 0x%02X (%d) '%c'", editor->filename,
-                     editor->file_size, editor->cursor_offset, ch, editor->last_key,
-                     isprint(ch) ? ch : '.');
-    }
+
+    unsigned char cur_byte = editor->file_size > 0 ? data[editor->cursor_offset] : 0;
+    len = printf("\"%s\"      %zuB      0x%zx      byte: 0x%02X (%u) '%c'", editor->filename,
+                 editor->file_size, editor->cursor_offset, cur_byte, cur_byte,
+                 isprint(cur_byte) ? cur_byte : '.');
 
     if (len < 0) {
         len = 0;
@@ -133,7 +130,7 @@ void display_file(const unsigned char *data, const struct editor *editor, size_t
         printf("\n");
     }
 
-    display_status_bar(editor, columns);
+    display_status_bar(editor, columns, data);
     printf("\n");
     display_mode_bar(editor, columns);
 
