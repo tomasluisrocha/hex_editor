@@ -5,7 +5,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "terminal.h"
+
 void display_file(const unsigned char *data, const struct editor *editor) {
+    terminal_cursor_home();
     for (size_t offset = 0; offset < editor->file_size; offset += ROW_SIZE) {
         printf("%08jx: ", (uintmax_t)offset);
 
@@ -54,4 +57,6 @@ void display_file(const unsigned char *data, const struct editor *editor) {
 
         printf("\n");
     }
+    terminal_clear_below();
+    terminal_flush();
 }

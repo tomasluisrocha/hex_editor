@@ -11,25 +11,7 @@ static struct termios original_settings;
 static bool raw_mode = false;
 static bool atexit_registered = false;
 
-void terminal_clear_screen(void) {
-    printf("\033[2J\033[H");
-    fflush(stdout);
-}
-
-void terminal_begin_frame(void) {
-    printf("\033[H");
-}
-
-void terminal_end_frame(void) {
-    printf("\033[J");
-    fflush(stdout);
-}
-
-void terminal_disable_raw_mode(void) {
-    if (!raw_mode) {
-        return;
-    }
-
+static void terminal_disable_raw_mode(void) {
     // Put the terminal back exactly as we found it.
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &original_settings) == -1) {
         perror("tcsetattr (restore)");
@@ -38,7 +20,7 @@ void terminal_disable_raw_mode(void) {
     raw_mode = false;
 }
 
-int terminal_enable_raw_mode(void) {
+static int terminal_enable_raw_mode(void) {
     if (raw_mode) {
         return 0;
     }
@@ -46,16 +28,6 @@ int terminal_enable_raw_mode(void) {
     if (tcgetattr(STDIN_FILENO, &original_settings) == -1) {
         perror("tcgetattr");
         return -1;
-    }
-
-    // From here on, any exit() or return from main() restores the terminal.
-    if (!atexit_registered) {
-        if (atexit(terminal_disable_raw_mode) == 0) {
-            atexit_registered = true;
-        } else {
-            fprintf(stderr, "atexit(): could not register exit function\n");
-            return -1;
-        }
     }
 
     // Work on a copy; original_settings stays untouched for the restore.
@@ -82,6 +54,59 @@ int terminal_enable_raw_mode(void) {
 
     raw_mode = true;
     return 0;
+}
+
+static void terminal_hide_cursor(void) {
+    printf("\033[?25l");
+}
+static void terminal_show_cursor(void) {
+    printf("\033[?25h");
+}
+
+int terminal_open(void) {
+    // From here on, any exit() or return from main() restores the terminal.
+    if (!atexit_registered) {
+        if (atexit(terminal_close) == 0) {
+            atexit_registered = true;
+        } else {
+            fprintf(stderr, "atexit(): could not register exit function\n");
+            return -1;
+        }
+    }
+
+    if (setvbuf(stdout, NULL, _IOFBF, 65536) != 0) {
+        perror("setvbuf");
+        return -1;
+    }
+
+    if (terminal_enable_raw_mode() == -1) {
+        return -1;
+    }
+
+    printf("\033[?1049h");
+    terminal_hide_cursor();
+    fflush(stdout);
+    return 0;
+}
+
+void terminal_close(void) {
+    if (!raw_mode) {
+        return;
+    }
+    terminal_show_cursor();
+    printf("\033[?1049l");
+    fflush(stdout);
+    terminal_disable_raw_mode();
+}
+
+void terminal_cursor_home(void) {
+    printf("\033[H");
+}
+void terminal_clear_below(void) {
+    printf("\033[J");
+}
+void terminal_flush(void) {
+    fflush(stdout);
 }
 
 int terminal_read_key(void) {

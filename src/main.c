@@ -28,27 +28,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (terminal_enable_raw_mode() == -1) {
+    if (terminal_open() == -1) {
         free(data);
         return 1;
     }
 
-    setvbuf(stdout, NULL, _IOFBF, 65536);
-
-    terminal_clear_screen();
-
     bool running = true;
     while (running) {
-        terminal_begin_frame();
         display_file(data, &editor);
-        terminal_end_frame();
 
         int chr = terminal_read_key();
 
         switch (chr) {
             case -1: {
                 int saved_errno = errno;
-                terminal_disable_raw_mode();
+                terminal_close();
                 fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));
                 free(data);
                 return 1;
@@ -74,6 +68,6 @@ int main(int argc, char *argv[]) {
     }
 
     free(data);
-    terminal_disable_raw_mode();
+    terminal_close();
     return 0;
 }
