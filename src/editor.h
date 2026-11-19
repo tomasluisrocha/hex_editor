@@ -17,6 +17,7 @@ enum display_mode {
 };
 
 struct editor {
+    const char *filename;
     size_t cursor_offset;
     size_t file_size;
     size_t first_row;

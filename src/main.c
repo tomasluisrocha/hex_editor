@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
     }
 
     struct editor editor = {
+        .filename = argv[1],
         .cursor_offset = 0,
         .first_row = 0,
         .mode = MODE_NORMAL,
@@ -41,7 +42,7 @@ int main(int argc, char *argv[]) {
         if (terminal_get_size(&rows, &columns) == -1) {
             int saved_errno = errno;
             terminal_close();
-            fprintf(stderr, "terminal_read_key: %s\n", strerror(saved_errno));
+            fprintf(stderr, "terminal_get_size: %s\n", strerror(saved_errno));
             free(data);
             return 1;
         }

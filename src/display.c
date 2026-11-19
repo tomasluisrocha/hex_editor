@@ -7,6 +7,21 @@
 
 #include "terminal.h"
 
+static void display_status_bar(const struct editor *editor) {
+    terminal_highlight_start();
+    printf("\"%s\"", editor->filename);
+    printf("      %zuB", editor->file_size);
+    printf("      0x%zx", editor->cursor_offset);
+    if (editor->last_key == -1) {
+        printf("      key: none");
+    } else {
+        unsigned char ch = (unsigned char)editor->last_key;
+        printf("      key: 0x%02X (%d) '%c'", ch, editor->last_key, isprint(ch) ? ch : '.');
+    }
+    terminal_highlight_stop();
+    terminal_clear_line();
+}
+
 void display_file(const unsigned char *data, const struct editor *editor, size_t visible_rows,
                   size_t columns) {
     terminal_cursor_home();
@@ -18,6 +33,8 @@ void display_file(const unsigned char *data, const struct editor *editor, size_t
         terminal_flush();
         return;
     }
+
+    size_t rows_printed = 0;
 
     for (size_t offset = editor->first_row * ROW_SIZE;
          offset < ((editor->first_row + visible_rows) * ROW_SIZE) && offset < editor->file_size;
@@ -32,13 +49,13 @@ void display_file(const unsigned char *data, const struct editor *editor, size_t
             bool selected = editor->cursor_offset == offset + i;
 
             if (selected) {
-                printf("\033[7m");
+                terminal_highlight_start();
             }
 
             printf("%02X", data[offset + i]);
 
             if (selected) {
-                printf("\033[0m");
+                terminal_highlight_stop();
             }
 
             printf(" ");
@@ -57,26 +74,27 @@ void display_file(const unsigned char *data, const struct editor *editor, size_t
             bool selected = editor->cursor_offset == offset + i;
 
             if (selected) {
-                printf("\033[7m");
+                terminal_highlight_start();
             }
 
             printf("%c", isprint(byte) ? byte : '.');
 
             if (selected) {
-                printf("\033[0m");
+                terminal_highlight_stop();
             }
         }
 
         terminal_clear_line();
         printf("\n");
+        rows_printed++;
     }
-    printf("\n");
-    if (editor->last_key == -1) {
-        printf("Last key: none");
-    } else {
-        unsigned char ch = (unsigned char)editor->last_key;
-        printf("Last key: 0x%02X (%d) '%c'", ch, editor->last_key, isprint(ch) ? ch : '.');
-    }
+
     terminal_clear_below();
+    for (size_t i = rows_printed; i <= visible_rows; i++) {
+        printf("\n");
+    }
+
+    display_status_bar(editor);
+
     terminal_flush();
 }

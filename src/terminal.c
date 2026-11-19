@@ -112,6 +112,12 @@ void terminal_flush(void) {
 void terminal_clear_line(void) {
     printf("\033[K");
 }
+void terminal_highlight_start(void) {
+    printf("\033[7m");
+}
+void terminal_highlight_stop(void) {
+    printf("\033[0m");
+}
 
 int terminal_read_key(void) {
     while (1) {
